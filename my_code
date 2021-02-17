@@ -1,0 +1,31 @@
+from flask import Flask, jsonify
+from flask_restplus import Api, Resource
+import requests, sys
+import csv
+# Define the application as a Flask app with the name defined by __name__
+application = Flask(__name__)
+# Define the API as api
+api = Api(app = application)
+variant_info = api.namespace('QChip', description='Collect variant information')
+@variant_info.route("/QChip/<string:variant_position>")
+class QChipClass(Resource):
+    def get(self, variant_position):
+        file_1 = "./Axiom_QChip2PM.txt"
+        dict = {}
+        with open(file_1, "r") as f:
+            reader1 = csv.reader(f, delimiter="\t")
+            for row in reader1:
+                input = row[2]
+                if input == variant_position:
+                    dict['variant_position'] = row[2]
+                    dict['HGVS_transcript'] = row[3]
+                    dict['HGVS_Predicted_Protein'] = row[4]
+                    dict['HGVS_Genomic_GRCh38'] = row[5]
+                    break
+                else:
+                    continue
+        return dict
+#Allows app to be run in debug mode
+if __name__ == '__main__':
+    application.debug = True # Enable debugging mode
+    application.run(host="127.0.0.1", port=5000) # Specify a host and port for the app
